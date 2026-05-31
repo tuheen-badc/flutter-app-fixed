@@ -1,0 +1,4 @@
+enum PumpExecutionRequestType {
+  START,
+  STOP
+}

@@ -1,0 +1,12 @@
+{
+  "@@locale": "bn",
+  "loginTitle": "অ্যাপে লগইন করুন",
+  "phoneLabel": "ফোন নম্বর",
+  "phoneHint": "যেমন: 017XXXXXXXX",
+  "passwordLabel": "পাসওয়ার্ড",
+  "forgotPassword": "পাসওয়ার্ড ভুলে গেছেন?",
+  "loginButton": "লগইন",
+  "noAccount": "কোনো অ্যাকাউন্ট নেই?",
+  "createAccount": "একটি তৈরি করুন",
+  "signingIn": "{phone} দিয়ে লগইন করা হচ্ছে"
+}
