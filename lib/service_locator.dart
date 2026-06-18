@@ -1,3 +1,4 @@
+import 'package:demo_app/core/session/credentials_manager.dart';
 import 'package:demo_app/core/network/dio_client.dart';
 import 'package:demo_app/data/repository/analytics.dart';
 import 'package:demo_app/data/repository/auth.dart';
@@ -105,6 +106,7 @@ import 'domain/usecases/user_transaction.dart';
 final serviceLocator = GetIt.instance;
 
 void setupServiceLocator() {
+  serviceLocator.registerSingleton<CredentialsManager>(CredentialsManager());
   serviceLocator.registerSingleton<DioClient>(DioClient());
 
   //Service

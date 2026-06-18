@@ -1,5 +1,7 @@
 import 'package:demo_app/common/bloc/home/home_state.dart';
 import 'package:demo_app/common/bloc/home/home_state_cubit.dart';
+import 'package:demo_app/core/session/credentials_manager.dart';
+import 'package:demo_app/service_locator.dart';
 import 'package:demo_app/domain/entities/role_specific_data.dart';
 import 'package:demo_app/presentation/auth/pages/login_screen.dart';
 import 'package:demo_app/presentation/drawer/role_based_drawer_screen.dart';
@@ -419,6 +421,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen>
             ),
           );
         } else if (label == 'Logout') {
+          serviceLocator<CredentialsManager>().clear();
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) => const LoginScreen()),
             (route) => false,

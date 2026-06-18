@@ -8,6 +8,7 @@ import 'package:demo_app/service_locator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'mqtt_control_screen.dart';
 
 import '../common/bloc/all_pump_list/all_pump_control_button_state.dart';
 import '../common/bloc/all_pump_list/all_pump_control_button_state_cubit.dart';
@@ -674,7 +675,14 @@ class _AllPumpStationControlScreenState
               hasPendingRequest: hasPendingRequest,
               pendingRequestType: displayPendingType,
               isUser: _isUser,
-              onPressed: () => _togglePump(context, station),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MqttControlScreen(),
+                  ),
+                );
+              },
             ),
           ],
         ),

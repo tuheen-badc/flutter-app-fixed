@@ -1,6 +1,7 @@
 import 'package:demo_app/common/bloc/login/login_state.dart';
 import 'package:demo_app/common/bloc/login/login_state_cubit.dart';
 import 'package:demo_app/controller/language_change_notifier.dart';
+import 'package:demo_app/core/session/credentials_manager.dart';
 import 'package:demo_app/data/models/login_payload.dart';
 import 'package:demo_app/domain/usecases/login.dart';
 import 'package:demo_app/screens/account_blocked_screen.dart';
@@ -36,12 +37,16 @@ class _LoginScreenState extends State<LoginScreen> {
     final loc = AppLocalizations.of(context)!;
     if (_formKey.currentState!.validate()) {
       final String phone = _phoneController.text.trim();
+      final String password = _passwordController.text;
+
+      // Save credentials for MQTT use
+      serviceLocator<CredentialsManager>().saveCredentials(phone, password);
 
       context.read<LoginButtonStateCubit>().execute(
         useCase: serviceLocator<LoginUseCase>(),
         params: LoginPayload(
-          phone: _phoneController.text,
-          password: _passwordController.text,
+          phone: phone,
+          password: password,
         ),
       );
     }
