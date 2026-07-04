@@ -681,6 +681,8 @@ class _AllPumpStationControlScreenState
                   MaterialPageRoute(
                     builder: (context) => MqttControlScreen(
                       initialPumpOn: station.running,
+                      pumpId: station.id,
+                      userId: widget.userData.id,
                     ),
                   ),
                 );

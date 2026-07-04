@@ -1,5 +1,3 @@
-import '../../../data/models/user_info.dart';
-
 abstract class UpdatePhoneScreenState {}
 
 class UpdatePhoneScreenInitialState extends UpdatePhoneScreenState {}

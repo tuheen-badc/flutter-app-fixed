@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../service_locator.dart';
 import '../../home/pages/home_screen.dart';
+import 'login_weather_loading_screen.dart';
 
 class LoginScreen extends StatefulWidget with RouteAware {
   const LoginScreen({Key? key}) : super(key: key);
@@ -34,7 +35,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _signIn(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
     if (_formKey.currentState!.validate()) {
       final String phone = _phoneController.text.trim();
       final String password = _passwordController.text;
@@ -51,19 +51,19 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     }
   }
-
+/*
   String? _validatePhone(String? value) {
-    // final loc = AppLocalizations.of(context)!;
-    // if (value == null || value.isEmpty) {
-    //   return '${loc.phoneLabel} is required';
-    // }
-    // final RegExp regex = RegExp(r'^\d{11}$');
-    // if (!regex.hasMatch(value.trim())) {
-    //   return '${loc.phoneLabel} must be 11 digits';
-    // }
-    // return null;
+    final loc = AppLocalizations.of(context)!;
+    if (value == null || value.isEmpty) {
+      return '${loc.phoneLabel} is required';
+    }
+    final RegExp regex = RegExp(r'^\d{11}$');
+    if (!regex.hasMatch(value.trim())) {
+      return '${loc.phoneLabel} must be 11 digits';
+    }
+    return null;
   }
-
+*/
   String? _validatePassword(String? value) {
     final loc = AppLocalizations.of(context)!;
     if (value == null || value.isEmpty) {
@@ -162,43 +162,50 @@ class _LoginScreenState extends State<LoginScreen> {
               context.read<LoginButtonStateCubit>().reset();
             }
           },
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.login,
-                      size: 100,
-                      color: Theme.of(context).primaryColor,
+          child: BlocBuilder<LoginButtonStateCubit, LoginButtonState>(
+            builder: (context, state) {
+              if (state is LoginButtonLoadingState) {
+                return const LoginWeatherLoadingScreen();
+              }
+              return Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.login,
+                          size: 100,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          loc.loginTitle,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        _buildPhoneWidget(loc),
+                        const SizedBox(height: 16),
+                        _buildPasswordWidget(loc),
+                        const SizedBox(),
+                        _buildForgotPasswordLink(loc),
+                        const SizedBox(height: 16),
+                        _buildLoginButtonWidget(context, loc),
+                        const SizedBox(height: 16),
+                        _buildCreateAccountGuidelineWidget(loc),
+                        const SizedBox(height: 16),
+                        _buildCreateAccountWidget(loc),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      loc.loginTitle,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    _buildPhoneWidget(loc),
-                    const SizedBox(height: 16),
-                    _buildPasswordWidget(loc),
-                    const SizedBox(),
-                    _buildForgotPasswordLink(loc),
-                    const SizedBox(height: 16),
-                    _buildLoginButtonWidget(context, loc),
-                    const SizedBox(height: 16),
-                    _buildCreateAccountGuidelineWidget(loc),
-                    const SizedBox(height: 16),
-                    _buildCreateAccountWidget(loc),
-                  ],
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
         ),
       ),
@@ -322,7 +329,7 @@ class _LoginScreenState extends State<LoginScreen> {
         hintText: loc.phoneHint,
         border: const OutlineInputBorder(),
       ),
-      validator: _validatePhone,
+      //validator: _validatePhone,
     );
   }
 }

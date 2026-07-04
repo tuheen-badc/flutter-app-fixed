@@ -279,21 +279,7 @@ class _RegistrationHistoryTabState extends State<RegistrationHistoryTab> {
                 listener: (context, state) {
                   if (state is OfficialPreRegistrationDeleteSuccessState) {
                     // Remove the item from the list
-                    final currentState = context
-                        .read<OfficialPreRegistrationCubit>()
-                        .state;
-                    if (currentState is OfficialPreRegistrationLoadedState) {
-                      final updatedList = currentState.registrationList
-                          .where((item) => item.id != state.registrationId)
-                          .toList();
-
-                      context.read<OfficialPreRegistrationCubit>().emit(
-                        currentState.copyWith(
-                          registrationList: updatedList,
-                          totalElements: currentState.totalElements - 1,
-                        ),
-                      );
-                    }
+                    context.read<OfficialPreRegistrationCubit>().removeItem(state.registrationId);
 
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(

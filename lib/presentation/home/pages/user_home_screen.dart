@@ -20,6 +20,7 @@ import '../../../screens/pump_station_list_screen.dart';
 import '../../../screens/user_avatar.dart';
 import '../../drawer/drawer_config.dart';
 import 'credit_balance_card.dart';
+import 'weather_screen.dart';
 
 class UserHomeScreen extends StatefulWidget {
   // No longer takes state as a prop — reads from cubit directly
@@ -279,6 +280,12 @@ class _UserHomeScreenState extends State<UserHomeScreen>
           Icons.analytics,
           Colors.purple,
           () => _navigateAndRefresh(UserAnalyticsScreen(userData: userInfo)),
+        ),
+        _buildQuickActionCard(
+          'Weather',
+          Icons.cloud,
+          Colors.blue,
+          () => _navigateAndRefresh(const WeatherScreen()),
         ),
         _buildQuickActionCard(
           'Settings',

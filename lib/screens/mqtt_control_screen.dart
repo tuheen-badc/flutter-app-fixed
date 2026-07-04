@@ -1,6 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:dartz/dartz.dart' as dartz hide State;
+import 'package:decimal/decimal.dart';
 import 'package:demo_app/core/session/credentials_manager.dart';
+import 'package:demo_app/data/models/credit_info.dart';
+import 'package:demo_app/data/models/pump_live_status_model.dart';
+import 'package:demo_app/data/models/pump_station_histories.dart';
+import 'package:demo_app/data/models/single_pump_station_history_criteria.dart';
+import 'package:demo_app/domain/usecases/pump_live_status.dart';
+import 'package:demo_app/domain/usecases/single_pump_station_history.dart';
+import 'package:demo_app/domain/usecases/user_credit.dart';
 import 'package:demo_app/service_locator.dart';
 import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_client.dart';
@@ -8,13 +17,19 @@ import 'package:mqtt_client/mqtt_server_client.dart';
 
 class MqttControlScreen extends StatefulWidget {
   final bool initialPumpOn;
-  const MqttControlScreen({super.key, this.initialPumpOn = false});
+  final int pumpId;
+  final int userId;
+
+  const MqttControlScreen({
+    super.key,
+    this.initialPumpOn = false,
+    required this.pumpId,
+    required this.userId,
+  });
 
   @override
   State<MqttControlScreen> createState() => _MqttControlScreenState();
 }
-
-
 
 class _MqttControlScreenState extends State<MqttControlScreen> {
   late MqttServerClient client;
@@ -29,7 +44,7 @@ class _MqttControlScreenState extends State<MqttControlScreen> {
   final int port = 8883;
   final String username = 'tuheen.badc';
   final String password = 'rafu@12Rakin@9';
-  final String topic = 'pump/control';
+  String get topic => 'pump/control/${widget.pumpId}';
 
   @override
   void initState() {
@@ -91,8 +106,10 @@ class _MqttControlScreenState extends State<MqttControlScreen> {
     final recMess = c[0].payload as MqttPublishMessage;
     final payload = MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
     final String cleanPayload = payload.trim();
+    final String receivedTopic = c[0].topic;
     
-    if (c[0].topic.contains(topic)) {
+    // Accept messages from the specific pump topic OR the general control topic
+    if (receivedTopic.contains(topic) || receivedTopic == 'pump/control/${widget.pumpId}') {
       bool? isStarting;
       String? pNum;
 
@@ -107,18 +124,29 @@ class _MqttControlScreenState extends State<MqttControlScreen> {
           isStarting = true;
         }
       } catch (_) {
-        // Fallback for raw strings (only if JSON fails or doesn't match)
         final upper = cleanPayload.toUpperCase();
-        if (upper.contains('STOP') || upper.contains('OFF')) isStarting = false;
-        else if (upper.contains('START')) isStarting = true;
+        if (upper.contains('STOP') || upper.contains('OFF')) {
+          isStarting = false;
+        } else if (upper.contains('START')) {
+          isStarting = true;
+        }
       }
 
       if (isStarting != null && mounted) {
+        final bool status = isStarting;
         setState(() {
-          pumpOn = isStarting!;
-          startedByPhone = isStarting! 
-              ? ((pNum != null && pNum != "0") ? pNum : 'Physical Device')
-              : null;
+          pumpOn = status;
+          if (status) {
+            // Update owner ONLY if the message has a valid phone number (not "0" or "999")
+            if (pNum != null && pNum != "123" && pNum != "999" && pNum.isNotEmpty) {
+              startedByPhone = pNum;
+            } else {
+              startedByPhone ??= 'Physical Device';
+            }
+          } else {
+            // Correctly clear the owner when the pump stops
+            startedByPhone = null;
+          }
         });
       }
     }
@@ -133,31 +161,166 @@ class _MqttControlScreenState extends State<MqttControlScreen> {
     }
   }
 
-  void sendCommand(String action) {
+  void sendCommand(String action) async {
     if (!isConnected) return;
 
     final credentials = serviceLocator<CredentialsManager>();
 
-    // 1. If pump is already running and someone tries to START it
-    if (action == 'START' && pumpOn) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Pump Is Running By Other User'),
-          backgroundColor: Colors.orange,
+    // 1. If user clicks START, check status from cloud (PumpLiveStatus)
+    if (action == 'START') {
+      setState(() => statusMessage = 'Checking Status...');
+
+      final dartz.Either liveStatusResult = await serviceLocator<PumpLiveStatusUseCase>().call(param: widget.userId);
+      
+      bool? isCurrentlyRunning;
+      
+      liveStatusResult.fold(
+        (error) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Communication Error'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+        (data) {
+          if (data is PumpLiveStatusResponse) {
+            isCurrentlyRunning = data.running;
+          }
+        },
+      );
+
+      if (isCurrentlyRunning == null) {
+        if (mounted) setState(() => statusMessage = 'Connected');
+        return;
+      }
+
+      if (isCurrentlyRunning!) {
+        if (mounted) {
+          setState(() {
+            statusMessage = 'Connected';
+            // Removed automatic pumpOn = true to keep UI in local state
+            // if the server still reports it as running after a quick stop
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Pump is Running'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return;
+      }
+
+      // 1.1 If stopped, check history for cooldown (30s)
+      final dartz.Either historyResult = await serviceLocator<SinglePumpStationHistoryUseCase>().call(
+        param: SinglePumpStationHistoryParam(
+          page: 0,
+          size: 1,
+          pumpStationId: widget.pumpId,
         ),
       );
-      return;
+
+      DateTime? lastStop;
+      String? lastUserPhone;
+      bool historySuccess = false;
+      
+      historyResult.fold(
+        (error) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Communication Error'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+        (data) {
+          historySuccess = true;
+          if (data is PumpStationHistoryResponse && data.historyList.isNotEmpty) {
+            final lastItem = data.historyList.first;
+            lastStop = lastItem.endedAt;
+            lastUserPhone = lastItem.userPhone;
+          }
+        },
+      );
+
+      if (!historySuccess) {
+        if (mounted) setState(() => statusMessage = 'Connected');
+        return;
+      }
+      
+      // Cooldown applies ONLY to the last user who used the pump
+      if (lastStop != null && lastUserPhone == credentials.phone) {
+        final nowUtc = DateTime.now().toUtc();
+        final stopUtc = lastStop!.toUtc();
+        
+        final serverElapsed = nowUtc.difference(stopUtc).inSeconds;
+        final localWaitElapsed = credentials.getLocalElapsedSeconds(widget.pumpId, lastStop!);
+        
+        // Use the maximum of what the server says and how long we've been waiting since we first saw it
+        final elapsedSeconds = serverElapsed > localWaitElapsed ? serverElapsed : localWaitElapsed;
+
+        if (elapsedSeconds < 30) {
+          final remaining = 30 - elapsedSeconds;
+
+          if (mounted) {
+            setState(() => statusMessage = 'Connected');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Please Wait $remaining Seconds to Start Again.'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+          return;
+        }
+      }
+
+      // Check user balance before starting
+      final dartz.Either balanceResult = await serviceLocator<UserCreditUseCase>().call();
+      bool hasBalance = false;
+      balanceResult.fold(
+        (error) => hasBalance = false,
+        (data) {
+          if (data is UserCreditResponseModel) {
+            hasBalance = data.availableCredit > Decimal.zero;
+          }
+        },
+      );
+
+      if (!hasBalance) {
+        if (mounted) {
+          setState(() => statusMessage = 'Connected');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Pump Failed to Start. \nNo Balance."),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+      
+      if (mounted) setState(() => statusMessage = 'Connected');
     }
 
     // 2. Only the user who started the pump can stop it
     if (action == 'STOP' && pumpOn) {
-      if (startedByPhone != null && startedByPhone != credentials.phone) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Only the user who started the pump can stop it'),
-            backgroundColor: Colors.red,
-          ),
-        );
+      if (startedByPhone != null && 
+          startedByPhone != credentials.phone && 
+          startedByPhone != 'Physical Device') {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Only the user who started the pump can stop it'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
         return;
       }
     }
@@ -226,14 +389,14 @@ class _MqttControlScreenState extends State<MqttControlScreen> {
             Icon(
               Icons.water_drop_rounded,
               size: 100,
-              color: pumpOn ? Colors.blue : Colors.grey.shade400,
+              color: pumpOn ? const Color(0xFFEF4444) : Colors.grey.shade400,
             ),
             Text(
-              pumpOn ? 'PUMP ON' : 'PUMP OFF',
+              pumpOn ? 'PUMP RUNNING' : 'PUMP STOPPED',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: pumpOn ? Colors.blue.shade800 : Colors.grey.shade600,
+                color: pumpOn ? const Color(0xFFEF4444) : Colors.grey.shade600,
               ),
             ),
 

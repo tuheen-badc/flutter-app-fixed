@@ -31,4 +31,19 @@ class OfficialPreRegistrationCubit extends Cubit<OfficialPreRegistrationState> {
       emit(OfficialPreRegistrationErrorState(errorMessage: e.toString()));
     }
   }
+
+  void removeItem(int id) {
+    if (state is OfficialPreRegistrationLoadedState) {
+      final currentState = state as OfficialPreRegistrationLoadedState;
+      final updatedList = currentState.registrationList
+          .where((item) => item.id != id)
+          .toList();
+      emit(
+        currentState.copyWith(
+          registrationList: updatedList,
+          totalElements: currentState.totalElements - 1,
+        ),
+      );
+    }
+  }
 }

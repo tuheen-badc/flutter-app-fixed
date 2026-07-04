@@ -1,16 +1,13 @@
 import 'package:demo_app/controller/language_change_notifier.dart';
 import 'package:demo_app/screens/forgot_password_screen.dart';
-import 'package:demo_app/screens/otp_validator_screen.dart';
 import 'package:demo_app/presentation/auth/pages/registration_screen.dart';
-import 'package:demo_app/screens/reset_password_screen.dart';
-import 'package:demo_app/screens/test_location.dart';
 import 'package:demo_app/service_locator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
 import 'l10n/app_localizations.dart'; // generated
-import 'presentation/auth/pages/login_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,7 +39,7 @@ class MyApp extends StatelessWidget {
               GlobalCupertinoLocalizations.delegate,
             ],
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const LoginScreen(),
+            home: const SplashScreen(),
             routes: {
               '/register': (context) => const RegistrationScreen(),
               '/forgot-password': (_) => const ForgotPasswordScreen(),

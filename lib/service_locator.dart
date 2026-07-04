@@ -94,6 +94,7 @@ import 'package:demo_app/domain/usecases/water_usages_report.dart';
 import 'package:get_it/get_it.dart';
 
 import 'data/source/user_api_service.dart';
+import 'data/source/weather_api_service.dart';
 import 'domain/usecases/all_pump_station_list.dart';
 import 'domain/usecases/all_user_list.dart';
 import 'domain/usecases/pre_registration.dart';
@@ -158,6 +159,7 @@ void setupServiceLocator() {
   serviceLocator.registerSingleton<OfficeApiService>(
     OfficeApiServiceImplementation(),
   );
+  serviceLocator.registerSingleton<WeatherApiService>(WeatherApiService());
 
   //Repository
   serviceLocator.registerSingleton<AuthRepository>(

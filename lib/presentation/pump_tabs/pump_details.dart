@@ -89,13 +89,7 @@ class PumpDetailsTab extends StatelessWidget {
               listener: (context, editState) {
                 if (editState is PumpDetailEditSuccessState) {
                   // Patch the view cubit with the freshly returned detail
-                  final viewCubit = context.read<PumpDetailViewCubit>();
-                  final current = viewCubit.state;
-                  if (current is PumpDetailViewLoadedState) {
-                    viewCubit.emit(
-                      current.copyWith(detail: editState.updatedDetail),
-                    );
-                  }
+                  context.read<PumpDetailViewCubit>().updateDetail(editState.updatedDetail);
                   context.read<PumpDetailEditCubit>().resetState();
 
                   ScaffoldMessenger.of(context).showSnackBar(
