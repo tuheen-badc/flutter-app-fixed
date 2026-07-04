@@ -22,6 +22,7 @@ import '../../../screens/all_pump_station_list_screen.dart';
 import '../../../screens/user_avatar.dart';
 import '../../../screens/water_pricing_screen.dart';
 import '../../drawer/drawer_config.dart';
+import 'weather_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   final HomeLoadedState state;
@@ -355,6 +356,17 @@ class _AdminHomeScreenState extends State<AdminHomeScreen>
             context,
             MaterialPageRoute(
               builder: (context) => WaterUsageReportScreen(userData: userInfo),
+            ),
+          ),
+        ),
+        _buildQuickActionCard(
+          'Weather',
+          Icons.cloud,
+          Colors.blue,
+          () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const WeatherScreen(),
             ),
           ),
         ),

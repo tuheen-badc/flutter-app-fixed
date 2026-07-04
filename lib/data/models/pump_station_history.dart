@@ -38,15 +38,12 @@ class PumpStationHistoryItem {
     );
   }
 
-  Duration? get duration {
-    if (endedAt == null) return null;
-    return endedAt!.difference(startedAt);
+  Duration get duration {
+    return endedAt.difference(startedAt);
   }
 
   String get durationFormatted {
     final dur = duration;
-    if (dur == null) return 'Ongoing';
-
     final hours = dur.inHours;
     final minutes = dur.inMinutes.remainder(60);
 
