@@ -7,6 +7,7 @@ class PumpStationCriteria {
   final int? upazillaId;
   final int? unionId;
   final int? userId;
+  final int? pumpStationId;
 
   PumpStationCriteria({
     this.page = 0,
@@ -15,7 +16,8 @@ class PumpStationCriteria {
     this.districtId,
     this.upazillaId,
     this.unionId,
-    this.userId
+    this.userId,
+    this.pumpStationId,
   });
 
   Map<String, dynamic> toMap() {
@@ -25,6 +27,8 @@ class PumpStationCriteria {
     if (districtId != null) map['districtId'] = districtId;
     if (upazillaId != null) map['upazillaId'] = upazillaId;
     if (unionId != null) map['unionId'] = unionId;
+    if (userId != null) map['userId'] = userId;
+    if (pumpStationId != null) map['pumpStationId'] = pumpStationId;
 
     return map;
   }
