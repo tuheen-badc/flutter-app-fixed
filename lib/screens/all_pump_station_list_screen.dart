@@ -679,7 +679,11 @@ class _AllPumpStationControlScreenState
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const MqttControlScreen(),
+                    builder: (context) => MqttControlScreen(
+                      initialPumpOn: station.running,
+                      pumpId: station.id,
+                      userId: widget.userData.id,
+                    ),
                   ),
                 );
               },

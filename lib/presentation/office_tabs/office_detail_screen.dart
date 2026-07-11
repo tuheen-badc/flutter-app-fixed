@@ -81,13 +81,7 @@ class OfficeDetailScreen extends StatelessWidget {
               listener: (context, editState) {
                 if (editState is OfficeDetailEditSuccessState) {
                   // Patch view cubit with fresh data — no reload needed
-                  final viewCubit = context.read<OfficeDetailViewCubit>();
-                  final current = viewCubit.state;
-                  if (current is OfficeDetailViewLoadedState) {
-                    viewCubit.emit(
-                      current.copyWith(detail: editState.updatedDetail),
-                    );
-                  }
+                  context.read<OfficeDetailViewCubit>().updateDetail(editState.updatedDetail);
                   context.read<OfficeDetailEditCubit>().resetState();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(

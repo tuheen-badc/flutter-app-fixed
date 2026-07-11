@@ -30,4 +30,10 @@ class OfficeDetailViewCubit extends Cubit<OfficeDetailViewState> {
 
   void refresh({required UseCase useCase, required int officeId}) =>
       loadDetail(useCase: useCase, officeId: officeId);
+
+  void updateDetail(dynamic updatedDetail) {
+    if (state is OfficeDetailViewLoadedState) {
+      emit((state as OfficeDetailViewLoadedState).copyWith(detail: updatedDetail));
+    }
+  }
 }

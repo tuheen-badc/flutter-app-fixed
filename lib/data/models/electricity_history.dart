@@ -14,14 +14,18 @@ class ElectricityStatusHistoryResponse {
   });
 
   factory ElectricityStatusHistoryResponse.fromJson(Map<String, dynamic> json) {
+    final embedded = json['_embedded'] as Map<String, dynamic>? ?? {};
+    
+    // Check for various common keys in HAL response
+    final list = (embedded['electricityStatusHistoryModelList'] ?? 
+                  embedded['electricityStatusHistoryDtoList'] ?? 
+                  embedded['electricityStatusHistories'] ?? []) as List;
+
     return ElectricityStatusHistoryResponse(
-      historyList:
-          (json['_embedded']['electricityStatusHistoryModelList'] as List)
-              .map((item) => ElectricityStatusHistoryItem.fromJson(item))
-              .toList(),
-      totalElements: json['page']['totalElements'],
-      totalPages: json['page']['totalPages'],
-      currentPage: json['page']['number'],
+      historyList: list.map((item) => ElectricityStatusHistoryItem.fromJson(item)).toList(),
+      totalElements: (json['page']?['totalElements'] ?? list.length) as int,
+      totalPages: (json['page']?['totalPages'] ?? 1) as int,
+      currentPage: (json['page']?['number'] ?? 0) as int,
     );
   }
 }

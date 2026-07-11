@@ -25,6 +25,7 @@ import '../../../screens/all_pump_station_list_screen.dart';
 import '../../../screens/user_avatar.dart';
 import '../../../screens/water_pricing_screen.dart';
 import '../../drawer/drawer_config.dart';
+import 'weather_screen.dart';
 
 class SuperAdminHomeScreen extends StatefulWidget {
   final HomeLoadedState state;
@@ -369,6 +370,17 @@ class _SuperAdminHomeScreenState extends State<SuperAdminHomeScreen>
             context,
             MaterialPageRoute(
               builder: (context) => CreateOfficeScreen(userData: userInfo),
+            ),
+          ),
+        ),
+        _buildQuickActionCard(
+          'Weather',
+          Icons.cloud,
+          Colors.blue,
+          () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const WeatherScreen(),
             ),
           ),
         ),

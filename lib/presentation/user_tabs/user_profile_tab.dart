@@ -171,9 +171,7 @@ class _UserProfileTabState extends State<UserProfileTab> {
                         officeId: currentState.user.officeId,
                       );
 
-                      context.read<UserProfileCubit>().emit(
-                        currentState.copyWith(user: updatedUser),
-                      );
+                      context.read<UserProfileCubit>().updateUser(updatedUser);
                     }
 
                     ScaffoldMessenger.of(context).showSnackBar(

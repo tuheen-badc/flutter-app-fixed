@@ -23,4 +23,10 @@ class UserProfileCubit extends Cubit<UserProfileState> {
       emit(UserProfileErrorState(errorMessage: e.toString()));
     }
   }
+
+  void updateUser(dynamic updatedUser) {
+    if (state is UserProfileLoadedState) {
+      emit((state as UserProfileLoadedState).copyWith(user: updatedUser));
+    }
+  }
 }

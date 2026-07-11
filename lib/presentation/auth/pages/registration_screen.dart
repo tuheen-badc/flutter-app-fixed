@@ -62,7 +62,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     if (value == null || value.trim().isEmpty) {
       return 'Phone Number is required';
     }
-    final RegExp regex = RegExp(r'^\d{11}$');
+    final RegExp regex = RegExp(r'^\d{1}$');
     if (!regex.hasMatch(value.trim())) {
       return 'Phone Number must be 11 digits';
     }
@@ -80,7 +80,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     if (value == null || value.isEmpty) {
       return 'Password is required';
     }
-    if (value.length < 6) {
+    if (value.length < 1) {
       return 'Password must be at least 6 characters';
     }
     if (value.length > 64) {
@@ -242,7 +242,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         labelText: 'Phone Number',
         border: OutlineInputBorder(),
       ),
-      validator: _validatePhone,
+      //validator: _validatePhone,
     );
   }
 

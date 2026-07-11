@@ -323,7 +323,7 @@ class _NewRegistrationTabState extends State<NewRegistrationTab> {
                                       .trim()
                                       .replaceAll(RegExp(r'[^0-9]'), '')
                                       .length <
-                                  10) {
+                                  1) {
                                 return 'Phone number must be at least 10 digits';
                               }
                               return null;

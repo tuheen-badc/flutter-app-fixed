@@ -6,6 +6,7 @@ import 'package:demo_app/service_locator.dart';
 import 'package:demo_app/presentation/auth/pages/login_screen.dart';
 import 'package:demo_app/presentation/drawer/role_based_drawer_screen.dart';
 import 'package:demo_app/screens/credit_recharge_screen.dart';
+import 'package:demo_app/screens/electricity_status_screen.dart';
 import 'package:demo_app/screens/pump_live_status_screen.dart';
 import 'package:demo_app/screens/settings_screen.dart';
 import 'package:demo_app/screens/transaction_history.dart';
@@ -20,6 +21,7 @@ import '../../../screens/pump_station_list_screen.dart';
 import '../../../screens/user_avatar.dart';
 import '../../drawer/drawer_config.dart';
 import 'credit_balance_card.dart';
+import 'weather_screen.dart';
 
 class UserHomeScreen extends StatefulWidget {
   // No longer takes state as a prop — reads from cubit directly
@@ -279,6 +281,20 @@ class _UserHomeScreenState extends State<UserHomeScreen>
           Icons.analytics,
           Colors.purple,
           () => _navigateAndRefresh(UserAnalyticsScreen(userData: userInfo)),
+        ),
+        _buildQuickActionCard(
+          'Electricity Status',
+          Icons.electric_bolt,
+          Colors.orange,
+          () => _navigateAndRefresh(
+            ElectricityAvailabilityScreen(userData: userInfo),
+          ),
+        ),
+        _buildQuickActionCard(
+          'Weather',
+          Icons.cloud,
+          Colors.blue,
+          () => _navigateAndRefresh(const WeatherScreen()),
         ),
         _buildQuickActionCard(
           'Settings',

@@ -29,4 +29,10 @@ class PumpDetailViewCubit extends Cubit<PumpDetailViewState> {
     required UseCase useCase,
     required int pumpStationId,
   }) => loadDetail(useCase: useCase, pumpStationId: pumpStationId);
+
+  void updateDetail(dynamic updatedDetail) {
+    if (state is PumpDetailViewLoadedState) {
+      emit((state as PumpDetailViewLoadedState).copyWith(detail: updatedDetail));
+    }
+  }
 }
